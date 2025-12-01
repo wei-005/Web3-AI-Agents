@@ -31,7 +31,7 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
     so we gather text parts using a Runner to avoid signature ambiguity.
     """
     session_service = InMemorySessionService()
-    runner = Runner(agent=agent, session_service=session_service)
+    runner = Runner(agent=agent, app_name="invoke-app", session_service=session_service)
     chunks = []
     async for event in runner.run_async(
         user_id="invoke-user",
