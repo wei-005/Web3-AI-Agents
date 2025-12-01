@@ -44,6 +44,12 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
             for part in event.content.parts:
                 if getattr(part, "text", None):
                     chunks.append(part.text)
+                if getattr(part, "function_response", None) and part.function_response:
+                    try:
+                        import json as _json
+                        chunks.append(_json.dumps(part.function_response.response))
+                    except Exception:
+                        pass
     return "\n".join(chunks).strip()
 
 
