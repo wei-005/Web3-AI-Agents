@@ -3,11 +3,11 @@ from typing import Dict
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 
-from agents import DEFAULT_MODEL
+from agents import DEFAULT_MODEL, DEFAULT_RETRY
 
 
 def create_evaluator_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
-    model = Gemini(model=model_name)
+    model = Gemini(model=model_name, retry_options=DEFAULT_RETRY)
     return LlmAgent(
         model=model,
         name="EvaluatorAgent",

@@ -76,7 +76,7 @@ class TradingOrchestrator:
 
     def __init__(self, model_name: str = DEFAULT_MODEL):
         # Orchestrator uses Gemini mainly to summarize final output.
-        self.model = Gemini(model=model_name)
+        self.model = Gemini(model=model_name, retry_options=DEFAULT_RETRY)
         self.search_agent = create_search_agent(model_name)
         self.de_agent = create_data_engineering_agent(model_name)
         self.analytics_agent = create_analytics_agent(model_name)

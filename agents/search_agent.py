@@ -3,7 +3,7 @@ from typing import List
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 
-from agents import DEFAULT_MODEL
+from agents import DEFAULT_MODEL, DEFAULT_RETRY
 from tools.data_tools import load_prices, fetch_binance_spot_klines, fetch_binance_24h
 
 
@@ -12,7 +12,7 @@ def create_search_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
     Search/Opportunity discovery agent.
     Uses local price data + Gemini reasoning to surface candidate symbols or ideas.
     """
-    model = Gemini(model=model_name)
+    model = Gemini(model=model_name, retry_options=DEFAULT_RETRY)
     return LlmAgent(
         model=model,
         name="SearchAgent",

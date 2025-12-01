@@ -2,7 +2,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 from google.adk.tools.function_tool import FunctionTool
 
-from agents import DEFAULT_MODEL
+from agents import DEFAULT_MODEL, DEFAULT_RETRY
 from tools.trading_tools import propose_trade_execution
 
 
@@ -10,7 +10,7 @@ def create_trading_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
     """
     Trading agent: generates a trade plan (paper only) based on idea + risk assessment.
     """
-    model = Gemini(model=model_name)
+    model = Gemini(model=model_name, retry_options=DEFAULT_RETRY)
     return LlmAgent(
         model=model,
         name="TradingAgent",

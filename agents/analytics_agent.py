@@ -1,7 +1,7 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 
-from agents import DEFAULT_MODEL
+from agents import DEFAULT_MODEL, DEFAULT_RETRY
 from tools.analysis_tools import compute_basic_metrics, compute_trade_stats
 from tools.data_tools import (
     load_prices,
@@ -15,7 +15,7 @@ def create_analytics_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
     """
     Analytics agent: run simple metrics and narrate findings.
     """
-    model = Gemini(model=model_name)
+    model = Gemini(model=model_name, retry_options=DEFAULT_RETRY)
     return LlmAgent(
         model=model,
         name="AnalyticsAgent",

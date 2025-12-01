@@ -1,7 +1,7 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
 
-from agents import DEFAULT_MODEL
+from agents import DEFAULT_MODEL, DEFAULT_RETRY
 from tools.data_tools import fetch_binance_book_ticker, fetch_binance_depth
 
 
@@ -9,7 +9,7 @@ def create_risk_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
     """
     Risk agent: review trade plan + analysis + user profile; return RiskAssessment.
     """
-    model = Gemini(model=model_name)
+    model = Gemini(model=model_name, retry_options=DEFAULT_RETRY)
     return LlmAgent(
         model=model,
         name="RiskAgent",
