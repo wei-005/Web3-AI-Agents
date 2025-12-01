@@ -14,7 +14,7 @@ from google.adk.agents import LlmAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 
-from agents import DEFAULT_MODEL
+from agents import DEFAULT_MODEL, DEFAULT_RETRY
 from agents.analytics_agent import create_analytics_agent
 from agents.data_engineering_agent import create_data_engineering_agent
 from agents.risk_agent import create_risk_agent
@@ -53,7 +53,7 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
                         text_parts.append(part.text)
         return "\n".join(text_parts).strip()
 
-            raise RuntimeError("Agent invocation not supported for this agent type.")
+    raise RuntimeError("Agent invocation not supported for this agent type.")
 
 
 def _safe_json(text: str) -> Any:
