@@ -28,29 +28,21 @@ from tools.context import compact_messages
 async def _invoke(agent: LlmAgent, user_text: str) -> str:
     """
     Attempt to invoke an ADK LlmAgent. ADK supports async iteration over events,
-    so we gather text parts; fallback to sync call if needed.
+    so we gather text parts using a Runner to avoid signature ambiguity.
     """
-    if hasattr(agent, "run_async"):
-        chunks = []
-        async for event in agent.run_async(user_text):
-            if getattr(event, "content", None) and event.content.parts:
-                for part in event.content.parts:
-                    if getattr(part, "text", None):
-                        chunks.append(part.text)
-        return "\n".join(chunks).strip()
-    elif hasattr(agent, "run"):
-        events = agent.run(user_text)
-        if isinstance(events, str):
-            return events
-        text_parts = []
-        for event in events or []:
-            if getattr(event, "content", None) and event.content.parts:
-                for part in event.content.parts:
-                    if getattr(part, "text", None):
-                        text_parts.append(part.text)
-        return "\n".join(text_parts).strip()
-    else:
-        raise RuntimeError("Agent invocation not supported for this agent type.")
+    session_service = InMemorySessionService()
+    runner = Runner(agent=agent, session_service=session_service)
+    chunks = []
+    async for event in runner.run_async(
+        user_id="invoke-user",
+        session_id="invoke-session",
+        new_message=types.Content(role="user", parts=[types.Part(text=user_text)]),
+    ):
+        if getattr(event, "content", None) and event.content.parts:
+            for part in event.content.parts:
+                if getattr(part, "text", None):
+                    chunks.append(part.text)
+    return "\n".join(chunks).strip()
 
 
 def _safe_json(text: str) -> Any:
