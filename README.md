@@ -48,6 +48,31 @@ python agents/run_orchestrator.py --request "analyze my portfolio: ETH, SOL; ris
 python evaluation/run_evaluations.py
 ```
 
+### Example output (in-process run)
+```
+Summary:
+ This report summarizes the findings from the orchestrator's analysis.
+
+### Ideas Considered
+* [List of ideas/strategies analyzed, e.g., "Momentum Strategy", "Mean Reversion"]
+
+### Key Metrics
+* **Total P&L:** [e.g., $15,230]
+* **Sharpe Ratio:** [e.g., 1.85]
+* **Max Drawdown:** [e.g., -7.5%]
+* **Win Rate:** [e.g., 62%]
+
+### Risk Levels
+* **Overall Risk:** [e.g., Medium]
+* **Specific Risk Factors:** [e.g., High volatility in sector, regulatory risk]
+
+### Trade Plan Highlights
+* Entry/Exit criteria, position sizing, stop-loss/TP
+
+### Cautions
+* Liquidity/execution, backtest period limits, correlation shifts
+```
+
 ## Deployment (Vertex Agent Engine outline)
 - Deploy only the **Orchestrator** with its A2A schema; sub-agents remain callable A2A endpoints (or bundled as internal services).  
 - See `deployment/README.md` for ADK CLI commands, config, and a Python client snippet.
