@@ -28,7 +28,7 @@ def load_prices(symbol: Optional[str] = None, start: Optional[str] = None, end: 
         df = df[df["timestamp"] >= pd.to_datetime(start)]
     if end:
         df = df[df["timestamp"] <= pd.to_datetime(end)]
-    return df.reset_index(drop=True)
+    return {"rows": df.reset_index(drop=True).to_dict(orient="records")}
 
 
 def load_trades(address: Optional[str] = None, portfolio: Optional[list] = None) -> pd.DataFrame:
@@ -42,7 +42,7 @@ def load_trades(address: Optional[str] = None, portfolio: Optional[list] = None)
     if portfolio:
         lower = [addr.lower() for addr in portfolio]
         df = df[df["address"].str.lower().isin(lower)]
-    return df.reset_index(drop=True)
+    return {"rows": df.reset_index(drop=True).to_dict(orient="records")}
 
 
 def synthesize_dataset_ref(symbol: str, window_days: int = 7) -> dict:
@@ -89,7 +89,7 @@ def fetch_binance_spot_klines(symbol: str, interval: str = "1h", limit: int = 20
                     "volume": float(r[5]),
                 }
             )
-        return pd.DataFrame(data)
+        return {"rows": data}
     except Exception:
         return load_prices(symbol)
 

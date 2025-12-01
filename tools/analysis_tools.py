@@ -14,8 +14,11 @@ def compute_basic_metrics(prices: pd.DataFrame) -> AnalysisResult:
     """
     Compute simple performance metrics on OHLCV data.
     """
+    # Accept either DataFrame or dict with rows
+    if isinstance(prices, dict):
+        prices = pd.DataFrame(prices.get("rows", []))
     if prices.empty:
-        return AnalysisResult(metrics={}, notes="No price data available.")
+        return {"metrics": {}, "notes": "No price data available."}
 
     prices = prices.sort_values("timestamp")
     first_close = float(prices.iloc[0]["close"])
@@ -31,15 +34,17 @@ def compute_basic_metrics(prices: pd.DataFrame) -> AnalysisResult:
         "volatility_pct": round(vol * 100, 2),
         "max_drawdown_pct": round(max_drawdown * 100, 2),
     }
-    return AnalysisResult(metrics=metrics, notes="Computed on local sample OHLCV data.")
+    return {"metrics": metrics, "notes": "Computed on local sample OHLCV data."}
 
 
 def compute_trade_stats(trades: pd.DataFrame) -> AnalysisResult:
     """
     Compute simple trade stats for a given address or portfolio.
     """
+    if isinstance(trades, dict):
+        trades = pd.DataFrame(trades.get("rows", []))
     if trades.empty:
-        return AnalysisResult(metrics={}, notes="No trades found for selection.")
+        return {"metrics": {}, "notes": "No trades found for selection."}
 
     buys = trades[trades["side"].str.lower() == "buy"]
     sells = trades[trades["side"].str.lower() == "sell"]
@@ -50,7 +55,7 @@ def compute_trade_stats(trades: pd.DataFrame) -> AnalysisResult:
         "num_sells": len(sells),
         "symbols_traded": trades["symbol"].nunique(),
     }
-    return AnalysisResult(metrics=metrics, notes="Basic trade stats; no PnL since we use mock data.")
+    return {"metrics": metrics, "notes": "Basic trade stats; no PnL since we use mock data."}
 
 
 def _max_drawdown(series: pd.Series) -> float:
