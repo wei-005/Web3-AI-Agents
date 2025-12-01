@@ -10,6 +10,7 @@ Multi-agent, Gemini-powered web3 trading assistant built for the Kaggle 5-Day Ag
 - **Evaluation**: evaluator agent checks completeness/risk coverage on predefined scenarios.  
 - **Deployment**: Orchestrator is the public entry; sub-agents stay behind A2A. Deployment guide for Vertex Agent Engine plus local A2A servers.
 - **Live spot data (optional)**: public Binance spot endpoints (klines/24h/depth/bookTicker/aggTrades) with `USE_BINANCE_LIVE` toggle; falls back to local CSV for offline/demo.
+- **Human-in-loop for trades**: TradingAgent uses a tool that can pause for approval; orchestrator auto-approves by default, or set `AUTO_APPROVE_TRADES=0` to require explicit approval handling.
 
 ## Repo layout
 ```
@@ -27,6 +28,7 @@ capstone-codex/
 - `pip install -r requirements.txt` (file will be added alongside code)
 - Env vars: `GOOGLE_API_KEY` (required to run with Gemini). Optionally set dataset paths.  
 - `USE_BINANCE_LIVE=1` (default) to use public spot APIs; set `0` to stay fully offline.
+- `AUTO_APPROVE_TRADES=0` to disable auto-approval and surface pending/approval logic (see TradingAgent + orchestrator pause/resume).
 
 ## Run locally (outline)
 1) Start sub-agent A2A services (or run in-process):  

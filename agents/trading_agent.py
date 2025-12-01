@@ -1,7 +1,9 @@
 from google.adk.agents import LlmAgent
 from google.adk.models.google_llm import Gemini
+from google.adk.tools.function_tool import FunctionTool
 
 from agents import DEFAULT_MODEL
+from tools.trading_tools import propose_trade_execution
 
 
 def create_trading_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
@@ -25,7 +27,11 @@ def create_trading_agent(model_name: str = DEFAULT_MODEL) -> LlmAgent:
           "time_horizon_days": int,
           "notes": "short text"
         }
+        Then call propose_trade_execution to gate execution:
+          - if status is pending, inform user we await approval
+          - if approved/auto-approved/rejected, summarize outcome
         Respect user risk: reduce size for conservative profiles, tighten stops for high risk.
         Do NOT claim to execute trades; this is paper planning only.
         """,
+        tools=[FunctionTool(func=propose_trade_execution)],
     )

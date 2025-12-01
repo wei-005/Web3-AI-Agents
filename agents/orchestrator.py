@@ -3,12 +3,16 @@ TradingOrchestratorAgent: coordinates the five sub-agents through A2A-style call
 This implementation runs agents in-process for simplicity; you can swap to HTTP A2A
 endpoints by replacing the call_* helpers with real A2A clients.
 """
+import os
 import asyncio
 import json
 from typing import Any, Dict, List, Optional
 
+from google.genai import types
 from google.adk.models.google_llm import Gemini
 from google.adk.agents import LlmAgent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
 
 from agents import DEFAULT_MODEL
 from agents.analytics_agent import create_analytics_agent
@@ -49,7 +53,7 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
                         text_parts.append(part.text)
         return "\n".join(text_parts).strip()
 
-    raise RuntimeError("Agent invocation not supported for this agent type.")
+            raise RuntimeError("Agent invocation not supported for this agent type.")
 
 
 def _safe_json(text: str) -> Any:
@@ -78,6 +82,53 @@ class TradingOrchestrator:
         self.analytics_agent = create_analytics_agent(model_name)
         self.risk_agent = create_risk_agent(model_name)
         self.trading_agent = create_trading_agent(model_name)
+
+    async def _invoke_with_approval(self, agent: LlmAgent, user_text: str, auto_approve: bool = True) -> str:
+        """
+        Run an agent that may pause for human approval (adk_request_confirmation).
+        If pause detected, auto-approve unless overridden via AUTO_APPROVE_TRADES=0 env.
+        """
+        session_service = InMemorySessionService()
+        runner = Runner(agent=agent, session_service=session_service)
+        events = []
+        async for event in runner.run_async(user_id="trade-user", session_id="trade-session", new_message=types.Content(role="user", parts=[types.Part(text=user_text)])):
+            events.append(event)
+
+        approval_event = None
+        for e in events:
+            if getattr(e, "content", None) and e.content.parts:
+                for part in e.content.parts:
+                    if getattr(part, "function_call", None) and part.function_call.name == "adk_request_confirmation":
+                        approval_event = {
+                            "approval_id": part.function_call.id,
+                            "invocation_id": e.invocation_id,
+                        }
+                        break
+        if approval_event:
+            approve_flag = auto_approve
+            # Build FunctionResponse back to agent
+            confirmation_response = types.FunctionResponse(
+                id=approval_event["approval_id"],
+                name="adk_request_confirmation",
+                response={"confirmed": approve_flag},
+            )
+            approval_message = types.Content(role="user", parts=[types.Part(function_response=confirmation_response)])
+            async for event in runner.run_async(
+                user_id="trade-user",
+                session_id="trade-session",
+                new_message=approval_message,
+                invocation_id=approval_event["invocation_id"],
+            ):
+                events.append(event)
+
+        # Gather text parts
+        chunks = []
+        for event in events:
+            if getattr(event, "content", None) and event.content.parts:
+                for part in event.content.parts:
+                    if getattr(part, "text", None):
+                        chunks.append(part.text)
+        return "\n".join(chunks).strip()
 
     async def run_workflow(
         self,
@@ -123,9 +174,11 @@ class TradingOrchestrator:
             risk = _safe_json(risk_raw)
 
             # Step 5: Trading plan
-            trade_raw = await _invoke(
+            auto_approve = os.getenv("AUTO_APPROVE_TRADES", "1").lower() not in {"0", "false", "no"}
+            trade_raw = await self._invoke_with_approval(
                 self.trading_agent,
-                f"Idea: {idea_text}. RiskAssessment: {json.dumps(risk)}. User profile: {json.dumps(profile)}. Output TradePlan JSON.",
+                f"Idea: {idea_text}. RiskAssessment: {json.dumps(risk)}. User profile: {json.dumps(profile)}. Output TradePlan JSON; call propose_trade_execution to gate execution.",
+                auto_approve=auto_approve,
             )
             trade_plan = _safe_json(trade_raw)
 
