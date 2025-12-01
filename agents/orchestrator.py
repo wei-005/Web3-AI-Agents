@@ -30,7 +30,6 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
     Attempt to invoke an ADK LlmAgent. ADK supports async iteration over events,
     so we gather text parts; fallback to sync call if needed.
     """
-    # Prefer async streaming if available
     if hasattr(agent, "run_async"):
         chunks = []
         async for event in agent.run_async(user_text):
@@ -39,9 +38,7 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
                     if getattr(part, "text", None):
                         chunks.append(part.text)
         return "\n".join(chunks).strip()
-
-    # Fallback: try sync run
-    if hasattr(agent, "run"):
+    elif hasattr(agent, "run"):
         events = agent.run(user_text)
         if isinstance(events, str):
             return events
@@ -52,8 +49,8 @@ async def _invoke(agent: LlmAgent, user_text: str) -> str:
                     if getattr(part, "text", None):
                         text_parts.append(part.text)
         return "\n".join(text_parts).strip()
-
-    raise RuntimeError("Agent invocation not supported for this agent type.")
+    else:
+        raise RuntimeError("Agent invocation not supported for this agent type.")
 
 
 def _safe_json(text: str) -> Any:
