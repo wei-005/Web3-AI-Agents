@@ -1,4 +1,4 @@
-# Web3 Trading Copilot (Capstone)
+# Web3 AI Agents
 
 Multi-agent, Gemini-powered web3 trading assistant built for the Kaggle 5-Day Agents capstone. The system demonstrates **multi-agent orchestration, MCP tools, memory/context engineering, evaluation, Agent2Agent (A2A) interop, and deployment**. All data is local/simulated (no live exchange calls), but the architecture leaves hooks to swap in real APIs.
 
