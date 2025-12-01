@@ -6,9 +6,8 @@ session_service = InMemorySessionService()
 
 
 async def ensure_session(app_name: str, user_id: str, session_id: str) -> None:
-    try:
-        await session_service.get_session(app_name=app_name, user_id=user_id, session_id=session_id)
-    except Exception:
+    session = await session_service.get_session(app_name=app_name, user_id=user_id, session_id=session_id)
+    if session is None:
         await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
 
 
